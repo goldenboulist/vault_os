@@ -155,9 +155,9 @@ class _PasswordCardState extends State<PasswordCard>
                       ],
                     ),
                   ),
-                  // Action buttons — visible on hover
+                  // Action buttons — visible on hover (desktop) or always (mobile)
                   AnimatedOpacity(
-                    opacity: _isHovered ? 1.0 : 0.0,
+                    opacity: (_isHovered || Theme.of(context).platform == TargetPlatform.android || Theme.of(context).platform == TargetPlatform.iOS) ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 180),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

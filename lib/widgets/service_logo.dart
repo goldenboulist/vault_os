@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../theme/app_theme.dart';
 
 class ServiceLogo extends StatelessWidget {
@@ -49,7 +50,14 @@ class ServiceLogo extends StatelessWidget {
   Widget _buildLogo() {
     if (service == null) return Icon(Icons.lock, color: AppTheme.textSecondary, size: size * 0.55);
     final normalized = service!.toLowerCase().replaceAll(' ', '');
-    final url = "https://img.logo.dev/$normalized?token=pk_INWfR88HTfuane3ipJiqCg&format=png&theme=dark";
+    String? token;
+    try {
+      token = dotenv.env['LOGO_DEV_TOKEN'];
+    } catch (e) {
+      // dotenv not initialized
+    }
+    if (token == null || token.isEmpty) return Icon(Icons.lock, color: AppTheme.textSecondary, size: size * 0.55);
+    final url = "https://img.logo.dev/$normalized?token=$token&format=png&theme=dark";
 
     return Image.network(
       url,

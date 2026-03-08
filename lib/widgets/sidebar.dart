@@ -27,115 +27,124 @@ class Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     final cats = vault.categories;
 
-    return Container(
-      width: 226,
-      color: AppTheme.background,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Logo ────────────────────────────────────────────────────
-          Container(
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: Color(0xFF00EAFF).withValues(alpha: 0.2), 
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0xFF00EAFF).withValues(alpha: 0.15),
-                        blurRadius: 20,
-                        spreadRadius: 0,
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        width: 226,
+        color: AppTheme.background,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Logo ────────────────────────────────────────────────────
+            Container(
+              height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF00EAFF).withValues(alpha: 0.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFF00EAFF).withValues(alpha: 0.15),
+                          blurRadius: 20,
+                          spreadRadius: 0,
+                        ),
+                        BoxShadow(
+                          color: Color(0xFF00EAFF).withValues(alpha: 0.05),
+                          blurRadius: 40,
+                          spreadRadius: 0,
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: SvgPicture.string(
+                        '''
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+                      </svg>
+                        ''',
+                        width: 16,
+                        height: 16,
+                        colorFilter: ColorFilter.mode(
+                          Color(0xFF00EAFF),
+                          BlendMode.srcIn,
+                        ),
                       ),
-                      BoxShadow(
-                        color: Color(0xFF00EAFF).withValues(alpha: 0.05),
-                        blurRadius: 40,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(7),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: SvgPicture.string(
-                      '''
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
-                    </svg>
-                      ''',
-                      width: 16,
-                      height: 16,
-                      colorFilter: ColorFilter.mode(Color(0xFF00EAFF), BlendMode.srcIn),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  'VAULT_OS',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const Divider(color: AppTheme.border, height: 1),
-
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _SectionLabel(label: 'CATEGORIES'),
-                  const SizedBox(height: 6),
-
-                  // Category list
-                  ...cats.map((cat) => _CategoryItem(
-                    key: ValueKey(cat.id),
-                    cat: cat,
-                    count: vault.countForCategory(cat.id),
-                    selected: selectedCategoryId == cat.id,
-                    onTap: () => onCategorySelected(cat.id),
-                    onEdit: cat.isBuiltIn
-                        ? null
-                        : () => _showEditDialog(context, cat),
-                    onDelete: cat.isBuiltIn
-                        ? null
-                        : () => _showDeleteConfirm(context, cat),
-                  )),
-
-                  // Add category button
-                  _AddCategoryBtn(
-                    onTap: () => _showCreateDialog(context),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'VAULT_OS',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.5,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
 
-          const Divider(color: AppTheme.border, height: 1),
+            const Divider(color: AppTheme.border, height: 1),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              children: [
-                _ToolItem(
-                    icon: Icons.settings_outlined, label: 'Settings'),
-                _LockItem(onTap: onLock),
-              ],
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionLabel(label: 'CATEGORIES'),
+                    const SizedBox(height: 6),
+
+                    // Category list
+                    ...cats.map((cat) => _CategoryItem(
+                          key: ValueKey(cat.id),
+                          cat: cat,
+                          count: vault.countForCategory(cat.id),
+                          selected: selectedCategoryId == cat.id,
+                          onTap: () => onCategorySelected(cat.id),
+                          onEdit: cat.isBuiltIn
+                              ? null
+                              : () => _showEditDialog(context, cat),
+                          onDelete: cat.isBuiltIn
+                              ? null
+                              : () => _showDeleteConfirm(context, cat),
+                        )),
+
+                    // Add category button
+                    _AddCategoryBtn(
+                      onTap: () => _showCreateDialog(context),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+
+            const Divider(color: AppTheme.border, height: 1),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: [
+                  _ToolItem(
+                      icon: Icons.settings_outlined, label: 'Settings'),
+                  _LockItem(onTap: onLock),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

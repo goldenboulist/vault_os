@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../theme/app_theme.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
@@ -22,6 +23,21 @@ class _LockScreenState extends State<LockScreen>
   bool _isLoading = false;
   String? _error;
   bool _hasMasterPassword = false;
+
+  bool get _isDesktopPlatform {
+    final platform = defaultTargetPlatform;
+    return platform == TargetPlatform.windows ||
+        platform == TargetPlatform.macOS ||
+        platform == TargetPlatform.linux;
+  }
+
+  double _scaleFor(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final baseWidth = _isDesktopPlatform ? 1280.0 : 360.0;
+    return (width / baseWidth).clamp(0.90, 1.35);
+  }
+
+  double _minTapForPlatform() => _isDesktopPlatform ? 40.0 : 48.0;
 
   final TextEditingController _masterKeyCtrl = TextEditingController();
   // Initialize fields (used in Initialize mode)
@@ -175,6 +191,10 @@ class _LockScreenState extends State<LockScreen>
 
   @override
   Widget build(BuildContext context) {
+    final platform = defaultTargetPlatform;
+    final isDesktop = platform == TargetPlatform.windows ||
+        platform == TargetPlatform.macOS ||
+        platform == TargetPlatform.linux;
     return Scaffold(
     backgroundColor: AppTheme.background,
     body: Stack(
@@ -187,37 +207,85 @@ class _LockScreenState extends State<LockScreen>
             ),
           ),
         ), 
-        Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Shield icon ──────────────────────────────────────────────
-            AnimatedBuilder(
-              animation: _glowAnim,
-              builder: (_, child) => Container(
-                width: 80,  // w-20
-                height: 80, // h-20
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF00EAFF).withValues(alpha: 0.10), // bg-primary/10
-                  border: Border.all(
-                    color: const Color(0xFF00EAFF).withValues(alpha: 0.30), // border-primary/30
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF00EAFF)
-                          .withValues(alpha: 0.15 * _glowAnim.value), // animated glow
-                      blurRadius: 25,
-                      spreadRadius: 1,
-                    ),
-                  ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final screenSize = MediaQuery.sizeOf(context);
+            final baseWidth = isDesktop ? 1280.0 : 360.0;
+            final scale = (constraints.maxWidth / baseWidth).clamp(0.90, 1.35);
+            final minTap = isDesktop ? 40.0 : 48.0;
+
+            final horizontalPadding = (isDesktop ? 32.0 : 16.0) * scale;
+            final contentMaxWidth = isDesktop
+                ? 520.0
+                : (screenSize.width - (horizontalPadding * 2)).clamp(0.0, 420.0);
+
+            final shieldSize = (80.0 * scale).clamp(minTap, 104.0);
+            final shieldIconSize = (40.0 * scale).clamp(20.0, 56.0);
+            final cardWidth = (isDesktop ? 420.0 : 370.0) * scale;
+            final effectiveCardWidth = cardWidth.clamp(
+              0.0,
+              contentMaxWidth,
+            );
+
+            final titleStyle = Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 3.5,
+                );
+            final subtitleStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 3.0,
+                  fontFamily: 'monospace',
+                );
+            final footerStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontFamily: 'monospace',
+                );
+
+            return Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: (isDesktop ? 28.0 : 20.0) * scale,
                 ),
-                child: child,
-              ),
-              child: Center(
-                child: SvgPicture.string(
-                  '''
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: contentMaxWidth,
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // ── Shield icon ──────────────────────────────────────────────
+                        AnimatedBuilder(
+                          animation: _glowAnim,
+                          builder: (_, child) => Container(
+                            width: shieldSize,
+                            height: shieldSize,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF00EAFF)
+                                  .withValues(alpha: 0.10), // bg-primary/10
+                              border: Border.all(
+                                color: const Color(0xFF00EAFF)
+                                    .withValues(alpha: 0.30), // border-primary/30
+                                width: 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00EAFF).withValues(
+                                    alpha: 0.15 * _glowAnim.value,
+                                  ), // animated glow
+                                  blurRadius: 25 * scale,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: child,
+                          ),
+                          child: Center(
+                            child: SvgPicture.string(
+                              '''
             <svg xmlns="http://www.w3.org/2000/svg"
                 width="24"
                 height="24"
@@ -230,206 +298,225 @@ class _LockScreenState extends State<LockScreen>
               <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
             </svg>
                   ''',
-                  width: 40,   // matches w-10 h-10 inside 80 container
-                  height: 40,
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xFF00EAFF),
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            ),
+                              width: shieldIconSize,
+                              height: shieldIconSize,
+                              colorFilter: const ColorFilter.mode(
+                                Color(0xFF00EAFF),
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                        ),
 
-            const SizedBox(height: 22),
+                        SizedBox(height: 22 * scale),
 
-            // ── Title ────────────────────────────────────────────────────
-            const Text(
-              'VAULT_OS',
-              style: TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 3.5,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'ENCRYPTED PASSWORD VAULT',
-              style: TextStyle(
-                color: AppTheme.textMuted,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 3.0,
-              ),
-            ),
+                        // ── Title ────────────────────────────────────────────────────
+                        Text('VAULT_OS', style: titleStyle, textAlign: TextAlign.center),
+                        SizedBox(height: 6 * scale),
+                        Text(
+                          'ENCRYPTED PASSWORD VAULT',
+                          style: subtitleStyle,
+                          textAlign: TextAlign.center,
+                        ),
 
-            const SizedBox(height: 36),
+                        SizedBox(height: 36 * scale),
 
-            // ── Card ─────────────────────────────────────────────────────
-            Container(
-              width: 370,
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppTheme.border, width: 1),
-                boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF00EAFF)
-                      .withValues(alpha: 0.15 * _glowAnim.value),
-                  blurRadius: 20,
-                  spreadRadius: 0,
-                ),
-                BoxShadow(
-                  color: const Color(0xFF00EAFF)
-                      .withValues(alpha: 0.05 * _glowAnim.value),
-                  blurRadius: 40,
-                  spreadRadius: 0,
-                ),
-              ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // AES badge
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
-                    child: Row(
-                      children: [
+                        // ── Card ─────────────────────────────────────────────────────
                         Container(
-                          width: 7,
-                          height: 7,
+                          width: effectiveCardWidth,
                           decoration: BoxDecoration(
-                            color: AppTheme.accentGreen,
-                            shape: BoxShape.circle,
+                            color: AppTheme.surface,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppTheme.border, width: 1),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.accentGreen
-                                    .withValues(alpha: 0.6),
-                                blurRadius: 6,
+                                color: const Color(0xFF00EAFF)
+                                    .withValues(alpha: 0.15 * _glowAnim.value),
+                                blurRadius: 20 * scale,
+                                spreadRadius: 0,
+                              ),
+                              BoxShadow(
+                                color: const Color(0xFF00EAFF)
+                                    .withValues(alpha: 0.05 * _glowAnim.value),
+                                blurRadius: 40 * scale,
+                                spreadRadius: 0,
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'AES-256 ENCRYPTION ACTIVE',
-                          style: TextStyle(
-                            color: AppTheme.textMuted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                            fontFamily: 'monospace',
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // AES badge
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                  20 * scale,
+                                  18 * scale,
+                                  20 * scale,
+                                  14 * scale,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: (7 * scale).clamp(6.0, 10.0),
+                                      height: (7 * scale).clamp(6.0, 10.0),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.accentGreen,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppTheme.accentGreen
+                                                .withValues(alpha: 0.6),
+                                            blurRadius: 6 * scale,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(width: 8 * scale),
+                                    Expanded(
+                                      child: Text(
+                                        'AES-256 ENCRYPTION ACTIVE',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 1.2,
+                                              fontFamily: 'monospace',
+                                            ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const Divider(color: AppTheme.border, height: 1),
+                              SizedBox(height: 18 * scale),
+
+                              // ── Tab switcher ──────────────────────────────────────
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 20 * scale,
+                                ),
+                                child: _TabSwitcher(
+                                  isUnlock: _isUnlockTab,
+                                  hasMasterPassword: _hasMasterPassword,
+                                  minHeight: minTap,
+                                  scale: scale,
+                                  onSwitch: (val) => setState(() {
+                                    _isUnlockTab = val;
+                                  }),
+                                ),
+                              ),
+
+                              SizedBox(height: 22 * scale),
+
+                              // ── Form ──────────────────────────────────────────────
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 20 * scale,
+                                ),
+                                child: _isUnlockTab
+                                    ? _buildUnlockForm()
+                                    : _buildInitForm(),
+                              ),
+
+                              // Error
+                              if (_error != null) ...[
+                                SizedBox(height: 10 * scale),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 20 * scale,
+                                  ),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12 * scale,
+                                      vertical: 8 * scale,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF2A0A0A),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: const Color(0xFFCC3333)
+                                            .withValues(alpha: 0.4),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.warning_amber_rounded,
+                                          size: (13 * scale).clamp(12.0, 16.0),
+                                          color: const Color(0xFFFF4444),
+                                        ),
+                                        SizedBox(width: 8 * scale),
+                                        Expanded(
+                                          child: Text(
+                                            _error!,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: const Color(0xFFFF6666),
+                                                  fontFamily: 'monospace',
+                                                ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+
+                              SizedBox(height: 18 * scale),
+
+                              // ── Primary action button ──────────────────────────────
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 20 * scale,
+                                ),
+                                child: _UnlockButton(
+                                  isLoading: _isLoading,
+                                  label: _isUnlockTab
+                                      ? 'UNLOCK VAULT'
+                                      : 'INITIALIZE VAULT',
+                                  icon: _isUnlockTab
+                                      ? Icons.lock_open_rounded
+                                      : Icons.add_moderator_outlined,
+                                  minHeight: minTap,
+                                  scale: scale,
+                                  onTap: _isUnlockTab ? _unlock : _initialize,
+                                ),
+                              ),
+
+                              SizedBox(height: 16 * scale),
+                            ],
                           ),
+                        ),
+
+                        SizedBox(height: 28 * scale),
+
+                        // ── Footer note ──────────────────────────────────────────────
+                        Text(
+                          'Your vault is encrypted locally with AES-256-GCM.',
+                          style: footerStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 4 * scale),
+                        Text(
+                          'Master key is never transmitted or stored.',
+                          style: footerStyle,
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   ),
-
-                  const Divider(color: AppTheme.border, height: 1),
-                  const SizedBox(height: 18),
-
-                  // ── Tab switcher ──────────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _TabSwitcher(
-                      isUnlock: _isUnlockTab,
-                      hasMasterPassword: _hasMasterPassword,
-                      onSwitch: (val) => setState(() {
-                        _isUnlockTab = val;
-                      }),
-                    ),
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // ── Form ──────────────────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _isUnlockTab
-                        ? _buildUnlockForm()
-                        : _buildInitForm(),
-                  ),
-
-                  // Error
-                  if (_error != null) ...[
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2A0A0A),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                              color: const Color(0xFFCC3333)
-                                  .withValues(alpha: 0.4)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.warning_amber_rounded,
-                                size: 13, color: Color(0xFFFF4444)),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _error!,
-                                style: const TextStyle(
-                                    color: Color(0xFFFF6666),
-                                    fontSize: 12,
-                                    fontFamily: 'monospace'),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 18),
-
-                  // ── Primary action button ──────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _UnlockButton(
-                      isLoading: _isLoading,
-                      label: _isUnlockTab ? 'UNLOCK VAULT' : 'INITIALIZE VAULT',
-                      icon: _isUnlockTab
-                          ? Icons.lock_open_rounded
-                          : Icons.add_moderator_outlined,
-                      onTap: _isUnlockTab ? _unlock : _initialize,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-                ],
+                ),
               ),
-            ),
-
-            const SizedBox(height: 28),
-
-            // ── Footer note ──────────────────────────────────────────────
-            const Text(
-              'Your vault is encrypted locally with AES-256-GCM.',
-              style: TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 12,
-                  fontFamily: 'monospace'),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Master key is never transmitted or stored.',
-              style: TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 12,
-                  fontFamily: 'monospace'),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            );
+          },
         ),
-      ),
       ]
     ),
     );
@@ -438,19 +525,21 @@ class _LockScreenState extends State<LockScreen>
   // ── Unlock form ───────────────────────────────────────────────────────────
 
   Widget _buildUnlockForm() {
+    final scale = _scaleFor(context);
+    final minTap = _minTapForPlatform();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'MASTER KEY',
-          style: TextStyle(
-            color: AppTheme.textMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.5,
+              ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8 * scale),
         _KeyField(
           controller: _masterKeyCtrl,
           hint: 'Enter master passphrase...',
@@ -460,18 +549,23 @@ class _LockScreenState extends State<LockScreen>
           onSubmit: _unlock,
           onChanged: (_) => setState(() => _error = null),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12 * scale),
         Center(
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: _showResetDialog,
-            child: const Text(
-              'Forgot password?',
-              style: TextStyle(
-                color: AppTheme.accentCyan,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                decoration: TextDecoration.underline,
-                decorationColor: AppTheme.accentCyan,
+            child: SizedBox(
+              height: minTap,
+              child: Center(
+                child: Text(
+                  'Forgot password?',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.accentCyan,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppTheme.accentCyan,
+                      ),
+                ),
               ),
             ),
           ),
@@ -483,19 +577,19 @@ class _LockScreenState extends State<LockScreen>
   // ── Initialize form ───────────────────────────────────────────────────────
 
   Widget _buildInitForm() {
+    final scale = _scaleFor(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'CREATE MASTER KEY',
-          style: TextStyle(
-            color: AppTheme.textMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.5,
+              ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8 * scale),
         _KeyField(
           controller: _newKeyCtrl,
           hint: 'Choose a strong passphrase...',
@@ -503,17 +597,16 @@ class _LockScreenState extends State<LockScreen>
           onToggle: () => setState(() => _newVisible = !_newVisible),
           onChanged: (_) => setState(() => _error = null),
         ),
-        const SizedBox(height: 14),
-        const Text(
+        SizedBox(height: 14 * scale),
+        Text(
           'CONFIRM MASTER KEY',
-          style: TextStyle(
-            color: AppTheme.textMuted,
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textMuted,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.5,
+              ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8 * scale),
         _KeyField(
           controller: _confirmKeyCtrl,
           hint: 'Repeat passphrase...',
@@ -566,17 +659,21 @@ class _TabSwitcher extends StatelessWidget {
   final bool isUnlock;
   final bool hasMasterPassword;
   final ValueChanged<bool> onSwitch;
+  final double minHeight;
+  final double scale;
 
   const _TabSwitcher({
     required this.isUnlock, 
     required this.hasMasterPassword,
+    required this.minHeight,
+    required this.scale,
     required this.onSwitch
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 38,
+      height: (38 * scale).clamp(minHeight, 52.0),
       decoration: BoxDecoration(
         color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(8),
@@ -635,32 +732,32 @@ class _TabState extends State<_Tab> {
             decoration: BoxDecoration(
               color: widget.active ? Color(0xFF00EAFF).withValues(alpha: 0.8) : Colors.transparent,
               boxShadow: [
-                        BoxShadow(
-                          color: widget.active ? Color(0xFF00EAFF).withValues(alpha: 0.15) : Colors.transparent,
-                          blurRadius: 20,
-                          spreadRadius: 0,
-                        ),
-                        BoxShadow(
-                          color: widget.active ? Color(0xFF00EAFF).withValues(alpha: 0.05) : Colors.transparent,
-                          blurRadius: 40,
-                          spreadRadius: 0,
-                        ),
-                      ],
+                BoxShadow(
+                  color: widget.active ? Color(0xFF00EAFF).withValues(alpha: 0.15) : Colors.transparent,
+                  blurRadius: 20,
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: widget.active ? Color(0xFF00EAFF).withValues(alpha: 0.05) : Colors.transparent,
+                  blurRadius: 40,
+                  spreadRadius: 0,
+                ),
+              ],
               borderRadius: BorderRadius.circular(5),
             ),
             child: Center(
               child: Text(
                 widget.label,
-                style: TextStyle(
-                  color: widget.active 
-                    ? Colors.black 
-                    : widget.disabled 
-                      ? AppTheme.textMuted.withValues(alpha: 0.3)
-                      : _hovered 
-                        ? Colors.white 
-                        : AppTheme.textMuted,
-                  fontSize: 11,
-                  fontWeight: widget.active ? FontWeight.w500 : FontWeight.w400,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: widget.active
+                      ? Colors.black
+                      : widget.disabled
+                          ? AppTheme.textMuted.withValues(alpha: 0.3)
+                          : _hovered
+                              ? Colors.white
+                              : AppTheme.textMuted,
+                  fontWeight:
+                      widget.active ? FontWeight.w500 : FontWeight.w400,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -702,8 +799,15 @@ class _KeyFieldState extends State<_KeyField> {
 
   @override
   Widget build(BuildContext context) {
+    final platform = defaultTargetPlatform;
+    final isDesktop = platform == TargetPlatform.windows ||
+        platform == TargetPlatform.macOS ||
+        platform == TargetPlatform.linux;
+    final minTap = isDesktop ? 40.0 : 48.0;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
+      constraints: BoxConstraints(minHeight: minTap),
       decoration: BoxDecoration(
         color: const Color(0xFF090C13),
         borderRadius: BorderRadius.circular(8),
@@ -729,32 +833,41 @@ class _KeyFieldState extends State<_KeyField> {
           obscureText: !widget.visible,
           onChanged: widget.onChanged,
           onSubmitted: (_) => widget.onSubmit?.call(),
-          style: const TextStyle(
-            color: AppTheme.textSecondary,
-            fontSize: 13,
-            fontFamily: 'monospace',
-            letterSpacing: 1.2,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppTheme.textSecondary,
+                fontFamily: 'monospace',
+                letterSpacing: 1.2,
+              ),
           decoration: InputDecoration(
             hintText: widget.hint,
-            hintStyle: const TextStyle(
-              color: AppTheme.textMuted,
-              fontSize: 13,
-              fontFamily: 'monospace',
-              letterSpacing: 0,
-            ),
+            hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppTheme.textMuted,
+                  fontFamily: 'monospace',
+                  letterSpacing: 0,
+                ),
             border: InputBorder.none,
             isDense: true,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            suffixIconConstraints: BoxConstraints(
+              minWidth: minTap,
+              minHeight: minTap,
+            ),
             suffixIcon: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: widget.onToggle,
-              child: Icon(
-                widget.visible
-                    ? Icons.visibility_off_outlined
-                    : Icons.remove_red_eye_outlined,
-                color: AppTheme.textMuted,
-                size: 17,
+              child: SizedBox(
+                width: minTap,
+                height: minTap,
+                child: Center(
+                  child: Icon(
+                    widget.visible
+                        ? Icons.visibility_off_outlined
+                        : Icons.remove_red_eye_outlined,
+                    color: AppTheme.textMuted,
+                    size: 17,
+                  ),
+                ),
               ),
             ),
           ),
@@ -773,11 +886,15 @@ class _UnlockButton extends StatefulWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
+  final double minHeight;
+  final double scale;
 
   const _UnlockButton({
     required this.isLoading,
     required this.label,
     required this.icon,
+    required this.minHeight,
+    required this.scale,
     required this.onTap,
   });
 
@@ -797,7 +914,7 @@ class _UnlockButtonState extends State<_UnlockButton> {
         onTap: widget.isLoading ? null : widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          height: 46,
+          height: (46 * widget.scale).clamp(widget.minHeight, 60.0),
           decoration: BoxDecoration(
             color: AppTheme.accentCyan,
             borderRadius: BorderRadius.circular(8),
@@ -805,7 +922,7 @@ class _UnlockButtonState extends State<_UnlockButton> {
               BoxShadow(
                 color: AppTheme.accentCyan
                     .withValues(alpha: _hovered ? 0.45 : 0.22),
-                blurRadius: _hovered ? 22 : 10,
+                blurRadius: (_hovered ? 22 : 10) * widget.scale,
               ),
             ],
           ),
@@ -822,16 +939,17 @@ class _UnlockButtonState extends State<_UnlockButton> {
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(widget.icon, size: 15, color: Colors.black),
-                      const SizedBox(width: 8),
+                      Icon(widget.icon,
+                          size: (15 * widget.scale).clamp(14.0, 20.0),
+                          color: Colors.black),
+                      SizedBox(width: 8 * widget.scale),
                       Text(
                         widget.label,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2.0,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 2.0,
+                            ),
                       ),
                     ],
                   ),

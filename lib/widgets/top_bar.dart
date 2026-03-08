@@ -33,93 +33,136 @@ class _TopBarState extends State<TopBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 61,
-      decoration: const BoxDecoration(
-        color: AppTheme.background,
-        border: Border(bottom: BorderSide(color: AppTheme.border, width: 1)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          // Search bar — expands to fill available space
-          Expanded(
-            child: Focus(
-              onFocusChange: (f) => setState(() => _searchFocused = f),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppTheme.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: _searchFocused
-                        ? AppTheme.accentCyan.withValues(alpha: 0.5)
-                        : AppTheme.border,
-                    width: 1,
-                  ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 720;
+        const minTap = 48.0;
+
+        final search = Expanded(
+          child: Focus(
+            onFocusChange: (f) => setState(() => _searchFocused = f),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: _searchFocused
+                      ? AppTheme.accentCyan.withValues(alpha: 0.5)
+                      : AppTheme.border,
+                  width: 1,
                 ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 11),
-                    const Icon(Icons.search, color: AppTheme.textMuted, size: 15),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: widget.onSearch,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 11),
+                  const Icon(Icons.search, color: AppTheme.textMuted, size: 15),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: widget.onSearch,
+                      style: const TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 13,
+                        height: 1.0,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Search vault...',
+                        hintStyle: TextStyle(
+                          color: AppTheme.textMuted,
                           fontSize: 13,
-                          height: 1.0, // prevents vertical drift
+                          height: 1.0,
                         ),
-                        decoration: const InputDecoration(
-                          hintText: 'Search vault...',
-                          hintStyle: TextStyle(
-                            color: AppTheme.textMuted,
-                            fontSize: 13,
-                            height: 1.0,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
             ),
           ),
+        );
 
-          const SizedBox(width: 16),
-
-          // Sort buttons
-          _SortButton(
-            label: 'Title',
-            selected: widget.sortMode == SortMode.title,
-            onTap: () => widget.onSortChanged(SortMode.title),
+        return Container(
+          height: 61,
+          decoration: const BoxDecoration(
+            color: AppTheme.background,
+            border: Border(bottom: BorderSide(color: AppTheme.border, width: 1)),
           ),
-          const SizedBox(width: 4),
-          _SortButton(
-            label: 'Strength',
-            selected: widget.sortMode == SortMode.strength,
-            onTap: () => widget.onSortChanged(SortMode.strength),
+          padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 20),
+          child: Row(
+            children: compact
+                ? [
+                    search,
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: minTap,
+                      height: minTap,
+                      child: PopupMenuButton<SortMode>(
+                        tooltip: 'Sort',
+                        icon: const Icon(Icons.sort_rounded,
+                            color: AppTheme.textSecondary),
+                        onSelected: widget.onSortChanged,
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(
+                            value: SortMode.title,
+                            child: Text('Title'),
+                          ),
+                          PopupMenuItem(
+                            value: SortMode.strength,
+                            child: Text('Strength'),
+                          ),
+                          PopupMenuItem(
+                            value: SortMode.date,
+                            child: Text('Date'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: minTap,
+                      height: minTap,
+                      child: IconButton(
+                        onPressed: widget.onNewEntry,
+                        tooltip: 'New Entry',
+                        icon: const Icon(Icons.add, color: Colors.black),
+                        style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFF00EAFF),
+                        ),
+                      ),
+                    ),
+                  ]
+                : [
+                    search,
+                    const SizedBox(width: 16),
+                    _SortButton(
+                      label: 'Title',
+                      selected: widget.sortMode == SortMode.title,
+                      onTap: () => widget.onSortChanged(SortMode.title),
+                    ),
+                    const SizedBox(width: 4),
+                    _SortButton(
+                      label: 'Strength',
+                      selected: widget.sortMode == SortMode.strength,
+                      onTap: () => widget.onSortChanged(SortMode.strength),
+                    ),
+                    const SizedBox(width: 4),
+                    _SortButton(
+                      label: 'Date',
+                      selected: widget.sortMode == SortMode.date,
+                      onTap: () => widget.onSortChanged(SortMode.date),
+                    ),
+                    const SizedBox(width: 16),
+                    _NewEntryButton(onTap: widget.onNewEntry),
+                  ],
           ),
-          const SizedBox(width: 4),
-          _SortButton(
-            label: 'Date',
-            selected: widget.sortMode == SortMode.date,
-            onTap: () => widget.onSortChanged(SortMode.date),
-          ),
-
-          const SizedBox(width: 16),
-
-          // New Entry button
-          _NewEntryButton(onTap: widget.onNewEntry),
-        ],
-      ),
+        );
+      },
     );
   }
 }

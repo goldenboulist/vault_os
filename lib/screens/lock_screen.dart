@@ -241,51 +241,53 @@ class _LockScreenState extends State<LockScreen>
                 );
 
             return Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: (isDesktop ? 28.0 : 20.0) * scale,
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: contentMaxWidth,
-                    minHeight: constraints.maxHeight,
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: (isDesktop ? 28.0 : 20.0) * scale,
                   ),
-                  child: IntrinsicHeight(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // ── Shield icon ──────────────────────────────────────────────
-                        AnimatedBuilder(
-                          animation: _glowAnim,
-                          builder: (_, child) => Container(
-                            width: shieldSize,
-                            height: shieldSize,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: const Color(0xFF00EAFF)
-                                  .withValues(alpha: 0.10), // bg-primary/10
-                              border: Border.all(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: contentMaxWidth,
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ── Shield icon ──────────────────────────────────────────────
+                          AnimatedBuilder(
+                            animation: _glowAnim,
+                            builder: (_, child) => Container(
+                              width: shieldSize,
+                              height: shieldSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
                                 color: const Color(0xFF00EAFF)
-                                    .withValues(alpha: 0.30), // border-primary/30
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF00EAFF).withValues(
-                                    alpha: 0.15 * _glowAnim.value,
-                                  ), // animated glow
-                                  blurRadius: 25 * scale,
-                                  spreadRadius: 1,
+                                    .withValues(alpha: 0.10), // bg-primary/10
+                                border: Border.all(
+                                  color: const Color(0xFF00EAFF)
+                                      .withValues(alpha: 0.30), // border-primary/30
+                                  width: 1,
                                 ),
-                              ],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF00EAFF).withValues(
+                                      alpha: 0.15 * _glowAnim.value,
+                                    ), // animated glow
+                                    blurRadius: 25 * scale,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: child,
                             ),
-                            child: child,
-                          ),
-                          child: Center(
-                            child: SvgPicture.string(
-                              '''
+                            child: Center(
+                              child: SvgPicture.string(
+                                '''
             <svg xmlns="http://www.w3.org/2000/svg"
                 width="24"
                 height="24"
@@ -297,219 +299,220 @@ class _LockScreenState extends State<LockScreen>
                 stroke-linejoin="round">
               <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
             </svg>
-                  ''',
-                              width: shieldIconSize,
-                              height: shieldIconSize,
-                              colorFilter: const ColorFilter.mode(
-                                Color(0xFF00EAFF),
-                                BlendMode.srcIn,
+                      ''',
+                                width: shieldIconSize,
+                                height: shieldIconSize,
+                                colorFilter: const ColorFilter.mode(
+                                  Color(0xFF00EAFF),
+                                  BlendMode.srcIn,
+                                ),
                               ),
                             ),
                           ),
-                        ),
 
-                        SizedBox(height: 22 * scale),
+                          SizedBox(height: 22 * scale),
 
-                        // ── Title ────────────────────────────────────────────────────
-                        Text('VAULT_OS', style: titleStyle, textAlign: TextAlign.center),
-                        SizedBox(height: 6 * scale),
-                        Text(
-                          'ENCRYPTED PASSWORD VAULT',
-                          style: subtitleStyle,
-                          textAlign: TextAlign.center,
-                        ),
-
-                        SizedBox(height: 36 * scale),
-
-                        // ── Card ─────────────────────────────────────────────────────
-                        Container(
-                          width: effectiveCardWidth,
-                          decoration: BoxDecoration(
-                            color: AppTheme.surface,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppTheme.border, width: 1),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF00EAFF)
-                                    .withValues(alpha: 0.15 * _glowAnim.value),
-                                blurRadius: 20 * scale,
-                                spreadRadius: 0,
-                              ),
-                              BoxShadow(
-                                color: const Color(0xFF00EAFF)
-                                    .withValues(alpha: 0.05 * _glowAnim.value),
-                                blurRadius: 40 * scale,
-                                spreadRadius: 0,
-                              ),
-                            ],
+                          // ── Title ────────────────────────────────────────────────────
+                          Text('VAULT_OS', style: titleStyle, textAlign: TextAlign.center),
+                          SizedBox(height: 6 * scale),
+                          Text(
+                            'ENCRYPTED PASSWORD VAULT',
+                            style: subtitleStyle,
+                            textAlign: TextAlign.center,
                           ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // AES badge
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(
-                                  20 * scale,
-                                  18 * scale,
-                                  20 * scale,
-                                  14 * scale,
+
+                          SizedBox(height: 36 * scale),
+
+                          // ── Card ─────────────────────────────────────────────────────
+                          Container(
+                            width: effectiveCardWidth,
+                            decoration: BoxDecoration(
+                              color: AppTheme.surface,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppTheme.border, width: 1),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00EAFF)
+                                      .withValues(alpha: 0.15 * _glowAnim.value),
+                                  blurRadius: 20 * scale,
+                                  spreadRadius: 0,
                                 ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: (7 * scale).clamp(6.0, 10.0),
-                                      height: (7 * scale).clamp(6.0, 10.0),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.accentGreen,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppTheme.accentGreen
-                                                .withValues(alpha: 0.6),
-                                            blurRadius: 6 * scale,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: 8 * scale),
-                                    Expanded(
-                                      child: Text(
-                                        'AES-256 ENCRYPTION ACTIVE',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: 1.2,
-                                              fontFamily: 'monospace',
+                                BoxShadow(
+                                  color: const Color(0xFF00EAFF)
+                                      .withValues(alpha: 0.05 * _glowAnim.value),
+                                  blurRadius: 40 * scale,
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // AES badge
+                                Padding(
+                                  padding: EdgeInsets.fromLTRB(
+                                    20 * scale,
+                                    18 * scale,
+                                    20 * scale,
+                                    14 * scale,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: (7 * scale).clamp(6.0, 10.0),
+                                        height: (7 * scale).clamp(6.0, 10.0),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.accentGreen,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppTheme.accentGreen
+                                                  .withValues(alpha: 0.6),
+                                              blurRadius: 6 * scale,
                                             ),
-                                        overflow: TextOverflow.ellipsis,
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(width: 8 * scale),
+                                      Expanded(
+                                        child: Text(
+                                          'AES-256 ENCRYPTION ACTIVE',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 1.2,
+                                                fontFamily: 'monospace',
+                                              ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
 
-                              const Divider(color: AppTheme.border, height: 1),
-                              SizedBox(height: 18 * scale),
+                                const Divider(color: AppTheme.border, height: 1),
+                                SizedBox(height: 18 * scale),
 
-                              // ── Tab switcher ──────────────────────────────────────
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 20 * scale,
-                                ),
-                                child: _TabSwitcher(
-                                  isUnlock: _isUnlockTab,
-                                  hasMasterPassword: _hasMasterPassword,
-                                  minHeight: minTap,
-                                  scale: scale,
-                                  onSwitch: (val) => setState(() {
-                                    _isUnlockTab = val;
-                                  }),
-                                ),
-                              ),
-
-                              SizedBox(height: 22 * scale),
-
-                              // ── Form ──────────────────────────────────────────────
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 20 * scale,
-                                ),
-                                child: _isUnlockTab
-                                    ? _buildUnlockForm()
-                                    : _buildInitForm(),
-                              ),
-
-                              // Error
-                              if (_error != null) ...[
-                                SizedBox(height: 10 * scale),
+                                // ── Tab switcher ──────────────────────────────────────
                                 Padding(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 20 * scale,
                                   ),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 12 * scale,
-                                      vertical: 8 * scale,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF2A0A0A),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(
-                                        color: const Color(0xFFCC3333)
-                                            .withValues(alpha: 0.4),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.warning_amber_rounded,
-                                          size: (13 * scale).clamp(12.0, 16.0),
-                                          color: const Color(0xFFFF4444),
-                                        ),
-                                        SizedBox(width: 8 * scale),
-                                        Expanded(
-                                          child: Text(
-                                            _error!,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: const Color(0xFFFF6666),
-                                                  fontFamily: 'monospace',
-                                                ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                  child: _TabSwitcher(
+                                    isUnlock: _isUnlockTab,
+                                    hasMasterPassword: _hasMasterPassword,
+                                    minHeight: minTap,
+                                    scale: scale,
+                                    onSwitch: (val) => setState(() {
+                                      _isUnlockTab = val;
+                                    }),
                                   ),
                                 ),
+
+                                SizedBox(height: 22 * scale),
+
+                                // ── Form ──────────────────────────────────────────────
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 20 * scale,
+                                  ),
+                                  child: _isUnlockTab
+                                      ? _buildUnlockForm()
+                                      : _buildInitForm(),
+                                ),
+
+                                // Error
+                                if (_error != null) ...[
+                                  SizedBox(height: 10 * scale),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20 * scale,
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12 * scale,
+                                        vertical: 8 * scale,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF2A0A0A),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: const Color(0xFFCC3333)
+                                              .withValues(alpha: 0.4),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.warning_amber_rounded,
+                                            size: (13 * scale).clamp(12.0, 16.0),
+                                            color: const Color(0xFFFF4444),
+                                          ),
+                                          SizedBox(width: 8 * scale),
+                                          Expanded(
+                                            child: Text(
+                                              _error!,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color: const Color(0xFFFF6666),
+                                                    fontFamily: 'monospace',
+                                                  ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+
+                                SizedBox(height: 18 * scale),
+
+                                // ── Primary action button ──────────────────────────────
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 20 * scale,
+                                  ),
+                                  child: _UnlockButton(
+                                    isLoading: _isLoading,
+                                    label: _isUnlockTab
+                                        ? 'UNLOCK VAULT'
+                                        : 'INITIALIZE VAULT',
+                                    icon: _isUnlockTab
+                                        ? Icons.lock_open_rounded
+                                        : Icons.add_moderator_outlined,
+                                    minHeight: minTap,
+                                    scale: scale,
+                                    onTap: _isUnlockTab ? _unlock : _initialize,
+                                  ),
+                                ),
+
+                                SizedBox(height: 16 * scale),
                               ],
-
-                              SizedBox(height: 18 * scale),
-
-                              // ── Primary action button ──────────────────────────────
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 20 * scale,
-                                ),
-                                child: _UnlockButton(
-                                  isLoading: _isLoading,
-                                  label: _isUnlockTab
-                                      ? 'UNLOCK VAULT'
-                                      : 'INITIALIZE VAULT',
-                                  icon: _isUnlockTab
-                                      ? Icons.lock_open_rounded
-                                      : Icons.add_moderator_outlined,
-                                  minHeight: minTap,
-                                  scale: scale,
-                                  onTap: _isUnlockTab ? _unlock : _initialize,
-                                ),
-                              ),
-
-                              SizedBox(height: 16 * scale),
-                            ],
+                            ),
                           ),
-                        ),
 
-                        SizedBox(height: 28 * scale),
+                          SizedBox(height: 28 * scale),
 
-                        // ── Footer note ──────────────────────────────────────────────
-                        Text(
-                          'Your vault is encrypted locally with AES-256-GCM.',
-                          style: footerStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 4 * scale),
-                        Text(
-                          'Master key is never transmitted or stored.',
-                          style: footerStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                          // ── Footer note ──────────────────────────────────────────────
+                          Text(
+                            'Your vault is encrypted locally with AES-256-GCM.',
+                            style: footerStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 4 * scale),
+                          Text(
+                            'Master key is never transmitted or stored.',
+                            style: footerStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

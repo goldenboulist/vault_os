@@ -1,121 +1,196 @@
 # VaultOS
 
-A secure password management application built with Flutter, designed to provide a modern and intuitive interface for storing and managing sensitive credentials with robust encryption and security features.
+<div align="center">
+  <img src="assets/app_icon.png" alt="VaultOS Logo" width="120" height="120">
+  
+  **A Secure Password Management Solution**
+  
+  [![Flutter Version](https://img.shields.io/badge/Flutter-3.11.0+-blue.svg)](https://flutter.dev)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+  [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Web-lightgrey.svg)]()
+</div>
+
+VaultOS is a comprehensive password management application built with Flutter, designed to provide secure local storage for sensitive credentials with enterprise-grade encryption and a modern, intuitive interface.
+
+## Table of Contents
+
+- [Features](#features)
+- [Security Architecture](#security-architecture)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Usage Guide](#usage-guide)
+- [Development](#development)
+- [Contributing](#contributing)
+- [Security Considerations](#security-considerations)
+- [License](#license)
 
 ## Features
 
-- **Secure Authentication**: Master password protection with PBKDF2 key derivation and salted hashing
-- **Encrypted Storage**: Local database storage with secure key management using Flutter Secure Storage
-- **Password Organization**: Categorize passwords with built-in and custom categories
-- **Password Strength Analysis**: Automatic strength evaluation (Strong/Good/Weak) based on complexity criteria
-- **Modern UI**: Dark theme with Material Design components and intuitive navigation
-- **Cross-Platform**: Supports Android, iOS, Windows, macOS, Linux, and Web
-- **Two-Factor Authentication Tracking**: Mark entries that use 2FA
-- **Secure Password Generation**: Built-in tools for creating strong passwords
-- **Search and Filter**: Quickly find passwords by title, username, or category
+### Core Functionality
+- **Master Password Protection**: PBKDF2 key derivation with configurable iterations
+- **Encrypted Local Storage**: SQLite database with AES encryption
+- **Password Organization**: Built-in and custom categories with icons
+- **Password Strength Analysis**: Real-time strength evaluation with visual indicators
+- **Advanced Search**: Filter by title, username, category, or custom fields
+- **Two-Factor Authentication Tracking**: Mark and manage 2FA-enabled accounts
 
-## Security Features
+### User Interface
+- **Modern Design**: Material Design 3 with dark theme support
+- **Cross-Platform**: Native performance on all major platforms
+- **Responsive Layout**: Optimized for mobile, tablet, and desktop
+- **Intuitive Navigation**: Sidebar-based category management
+- **Secure Password Generator**: Customizable password creation tools
 
+### Security Features
 - **PBKDF2 Key Derivation**: 50,000+ iterations for master password hashing
-- **Salted Hashing**: Unique salt for each installation to prevent rainbow table attacks
-- **Constant-Time Comparison**: Prevents timing attacks during password verification
-- **Secure Storage**: Uses platform-specific secure storage (Keychain/Keystore)
-- **Local-Only Storage**: No cloud synchronization - data stays on your device
-- **Memory Safety**: Sensitive data is handled securely in memory
+- **Salted Hashing**: Unique salt per installation prevents rainbow table attacks
+- **Constant-Time Comparison**: Timing attack prevention during authentication
+- **Platform Secure Storage**: Keychain (iOS) and Keystore (Android) integration
+- **Local-Only Architecture**: No cloud synchronization or data transmission
+- **Memory Safety**: Secure handling of sensitive data in memory
+
+## Security Architecture
+
+VaultOS implements a defense-in-depth approach to security:
+
+### Authentication Layer
+- Master password hashed using PBKDF2 with random salt
+- Configurable iteration count (default: 50,000)
+- Constant-time string comparison prevents timing attacks
+
+### Encryption Layer
+- AES-256 encryption for all stored password data
+- Encryption keys derived from master password using secure key derivation
+- Separate encryption for database entries and metadata
+
+### Storage Layer
+- SQLite database for structured data storage
+- Flutter Secure Storage for sensitive keys and salts
+- Platform-specific secure storage mechanisms
 
 ## Installation
 
-### Prerequisites
+### System Requirements
+- Flutter SDK 3.11.0 or higher
+- Dart SDK compatible with Flutter version
+- Platform-specific development tools:
+  - Android: Android Studio or Android SDK
+  - iOS: Xcode 12.0 or higher
+  - Windows: Visual Studio 2019 or higher
+  - macOS: Xcode and CocoaPods
+  - Linux: GTK development libraries
 
-- Flutter SDK (version 3.11.0 or higher)
-- Dart SDK
-- Platform-specific development tools (Android Studio, Xcode, etc.)
+### Quick Setup
 
-### Setup
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/your-username/vault_os.git
+   cd vault_os
+   ```
 
-1. Clone the repository:
+2. **Install Dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Verify Setup**
+   ```bash
+   flutter doctor
+   ```
+
+4. **Run the Application**
+   ```bash
+   flutter run
+   ```
+
+### Platform-Specific Build
+
+For production builds on specific platforms:
+
 ```bash
-git clone <repository-url>
-cd vault_os
+# Android
+flutter build apk --release
+
+# iOS
+flutter build ios --release
+
+# Windows
+flutter build windows --release
+
+# macOS
+flutter build macos --release
+
+# Linux
+flutter build linux --release
+
+# Web
+flutter build web --release
 ```
 
-2. Install dependencies:
-```bash
-flutter pub get
-```
+## Getting Started
 
-3. Run the application:
-```bash
-flutter run
-```
+### Initial Configuration
 
-## Usage
+1. **Launch VaultOS** for the first time
+2. **Create Master Password** (minimum 8 characters, recommended 12+)
+3. **Set Up Security Questions** for password recovery
+4. **Configure Security Settings** (biometric authentication, auto-lock, etc.)
 
-### First Time Setup
+### First Password Entry
 
-1. Launch the application
-2. Create a master password (minimum 8 characters)
-3. Set up security questions for password recovery
-4. Start adding your password entries
-
-### Adding Passwords
-
-1. Click the "Add Entry" button
-2. Fill in the required fields:
-   - Title/Service Name
+1. Click "Add Entry" in the main interface
+2. Fill in required information:
+   - Service/Title
    - Username/Email
    - Password
    - Category selection
-   - Website URL (optional)
-   - Notes (optional)
-3. Save the entry
+3. Add optional details:
+   - Website URL
+   - Notes
+   - 2FA status
+4. Save the encrypted entry
 
-### Managing Categories
+## Usage Guide
 
-- Use built-in categories (Social, Finance, Work, Email, Shopping, Security, Other)
-- Create custom categories with custom icons and colors
-- Organize passwords for better accessibility
+### Password Management
 
-### Security Best Practices
+**Adding Entries**
+- Use the "Add Entry" button for new passwords
+- Select appropriate category for organization
+- Utilize the password generator for strong credentials
 
-- Use a strong master password with mixed characters, numbers, and symbols
-- Enable device biometric authentication when available
-- Regularly update weak passwords
-- Use the password strength indicator to guide password creation
-- Keep your master password secure and never share it
+**Editing Entries**
+- Click on any password card to view details
+- Edit functionality available for all fields
+- Password strength indicator updates in real-time
 
-## Architecture
+**Deleting Entries**
+- Swipe to delete or use the delete button
+- Confirmation required for permanent deletion
+- Entries are permanently removed from encrypted storage
 
-The application follows a clean architecture pattern with the following key components:
+### Category Management
 
-### Core Services
+**Built-in Categories**
+- Social Media
+- Financial Services
+- Work Accounts
+- Email Services
+- Shopping Platforms
+- Security Tools
+- Other
 
-- **AuthService**: Handles authentication, password hashing, and key derivation
-- **EncryptionService**: Manages data encryption and decryption
-- **VaultStorageService**: Provides database operations for password entries
-- **SimpleVaultStorage**: Lightweight storage implementation
+**Custom Categories**
+- Create unlimited custom categories
+- Assign custom icons and colors
+- Organize according to personal preferences
 
-### Data Models
+### Search and Filter
 
-- **PasswordEntry**: Represents a stored password with metadata
-- **VaultCategory**: Defines categories for organizing passwords
-- **VaultState**: Manages application state and data operations
-
-### UI Components
-
-- **LockScreen**: Authentication interface
-- **VaultScreen**: Main password management interface
-- **PasswordCard**: Individual password entry display
-- **Sidebar**: Navigation and category management
-
-## Dependencies
-
-- `flutter`: UI framework
-- `flutter_secure_storage`: Secure local storage
-- `crypto`: Cryptographic functions
-- `sqflite`: SQLite database operations
-- `path`: File path utilities
-- `flutter_svg`: SVG image support
+- **Quick Search**: Find entries by title or username
+- **Category Filter**: View passwords by specific category
+- **Advanced Search**: Filter by multiple criteria
+- **Recent Entries**: Quick access to recently used passwords
 
 ## Development
 
@@ -123,53 +198,192 @@ The application follows a clean architecture pattern with the following key comp
 
 ```
 lib/
-├── main.dart                 # Application entry point
-├── models/                   # Data models
+├── main.dart                    # Application entry point
+├── models/                      # Data models and entities
 │   └── password_entry.dart
-├── services/                 # Business logic
+├── services/                    # Business logic and services
 │   ├── auth_service.dart
 │   ├── encryption_service.dart
+│   ├── simple_vault_storage.dart
 │   └── vault_storage_service.dart
-├── screens/                  # UI screens
+├── screens/                     # UI screens and pages
 │   ├── lock_screen.dart
 │   └── vault_screen.dart
-├── widgets/                  # Reusable UI components
-│   ├── password_card.dart
-│   ├── new_entry_dialog.dart
-│   └── sidebar.dart
-└── theme/                    # App theming
-    └── app_theme.dart
+├── theme/                       # Application theming
+│   └── app_theme.dart
+└── widgets/                     # Reusable UI components
+    ├── password_card.dart
+    ├── new_entry_dialog.dart
+    └── sidebar.dart
 ```
 
-### Contributing
+### Core Services
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+**AuthService**
+- Master password validation
+- PBKDF2 key derivation
+- Session management
+
+**EncryptionService**
+- Data encryption/decryption
+- Key management
+- Secure random generation
+
+**VaultStorageService**
+- Database operations
+- CRUD operations for password entries
+- Category management
+
+**SimpleVaultStorage**
+- Lightweight storage implementation
+- Local data persistence
+- Query optimization
+
+### Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| flutter | SDK | UI framework |
+| flutter_secure_storage | ^10.0.0 | Platform secure storage |
+| crypto | ^3.0.3 | Cryptographic functions |
+| sqflite | ^2.3.0 | SQLite database operations |
+| path | ^1.8.3 | File path utilities |
+| flutter_svg | ^2.0.9 | SVG image support |
+| flutter_dotenv | ^5.1.0 | Environment configuration |
+
+### Development Workflow
+
+1. **Environment Setup**
+   ```bash
+   flutter pub get
+   flutter pub run build_runner build
+   ```
+
+2. **Testing**
+   ```bash
+   flutter test
+   flutter test --coverage
+   ```
+
+3. **Code Analysis**
+   ```bash
+   flutter analyze
+   dart format .
+   ```
+
+4. **Build Verification**
+   ```bash
+   flutter build apk --debug
+   flutter build web --debug
+   ```
+
+## Contributing
+
+We welcome contributions to VaultOS! Please follow these guidelines:
+
+### Development Process
+
+1. **Fork the Repository**
+2. **Create Feature Branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Implement Changes**
+   - Follow existing code style
+   - Add appropriate tests
+   - Update documentation
+4. **Test Thoroughly**
+   ```bash
+   flutter test
+   flutter analyze
+   ```
+5. **Submit Pull Request**
+   - Provide clear description
+   - Include test results
+   - Document breaking changes
+
+### Code Standards
+
+- Follow Dart official style guide
+- Use meaningful variable and function names
+- Add documentation comments for public APIs
+- Maintain test coverage above 80%
+- Ensure all security features are properly tested
+
+### Security Contributions
+
+- Security-related changes require additional review
+- Follow responsible disclosure for vulnerabilities
+- Include security impact assessment in PR description
 
 ## Security Considerations
 
-- This application stores all data locally on the device
-- No data is transmitted to external servers
-- The master password is never stored in plaintext
-- All sensitive operations are performed in memory
-- Regular security audits are recommended for production use
+### Threat Model
+
+VaultOS is designed to protect against:
+- Unauthorized access to stored passwords
+- Data extraction from device storage
+- Memory-based attacks during runtime
+- Dictionary and brute force attacks
+
+### Limitations
+
+- **Local Storage Only**: No cloud synchronization or backup
+- **Single Device**: Data is not shared between devices
+- **Master Password Recovery**: Limited to security questions
+- **Physical Access**: Device compromise defeats all protections
+
+### Best Practices
+
+- Use a strong, unique master password
+- Enable device biometric authentication
+- Regularly update the application
+- Backup data securely (manual export/import)
+- Keep the operating system updated
+
+### Auditing
+
+- Regular security audits recommended for production use
+- Penetration testing should validate encryption implementation
+- Code reviews should focus on security-critical paths
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+```
+Copyright (c) 2024 VaultOS Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
 
 ## Support
 
-For issues, questions, or contributions, please open an issue on the GitHub repository.
+For issues, questions, or contributions:
+
+- **Issues**: [GitHub Issues](https://github.com/your-username/vault_os/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/vault_os/discussions)
+- **Security Issues**: Private message or secure email for vulnerability reports
 
 ## Version History
 
-- **Version 0.1.0**: Initial release with core password management features
-  - Master password authentication
-  - Basic CRUD operations for passwords
-  - Category management
-  - Password strength analysis
-  - Cross-platform support
+### Version 0.1.0+1 (Current)
+- Initial release with core password management features
+- Master password authentication with PBKDF2
+- Encrypted local storage with SQLite
+- Category management system
+- Password strength analysis
+- Cross-platform support
+- Modern Material Design interface
+
+---
+
+**Built with Flutter | Secure by Design | Privacy First**
